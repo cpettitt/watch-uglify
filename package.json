@@ -18,6 +18,7 @@
     "eazy-logger": "^2.1.2",
     "fs-extra": "^0.24.0",
     "lodash": "^3.10.1",
+    "rename": "^1.0.3",
     "source-map-support": "^0.3.2",
     "uglify-js": "^2.4.24"
   },

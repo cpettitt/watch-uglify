@@ -52,6 +52,10 @@ initial minification pass. You can close the watcher with `watcher.close()`.
   `watcher.close()`.
 - `delete` (default: `false`). When `true` a delete of a file in `srcDir` after
   the `ready` event will cause the associated file in `destDir` to be removed.
+- `rename` (default: `{ suffix: ".min" }`). Applies a transform to the file
+  name in the destination directory. For example, if the input is `script.js`
+  then the output will be `script.min.js` by default. See
+  [rename](https://github.com/popomore/rename) for rename options.
 
 #### Events
 

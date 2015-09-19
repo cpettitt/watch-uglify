@@ -11,6 +11,7 @@ import chokidar from "chokidar";
 import defaults from "lodash/object/defaults";
 import fs from "fs-extra";
 import path from "path";
+import rename from "rename";
 import uglify from "uglify-js";
 import { EventEmitter } from "events";
 import { Logger } from "eazy-logger";
@@ -19,6 +20,7 @@ const DEFAULT_OPTS = {
   logLevel: "off",
   persistent: true,
   delete: false,
+  rename: { suffix: ".min" },
   uglify: {}
 };
 
@@ -40,6 +42,8 @@ class UglifyWatcher extends EventEmitter {
 
     this._delete = opts.delete;
     this._uglifyOpts = opts.uglify;
+
+    this._renameOpts = opts.rename;
 
     const globs = arrify(opts.glob || ".");
 
@@ -87,7 +91,7 @@ class UglifyWatcher extends EventEmitter {
       filePath = ".";
     }
     const srcPath = path.join(this._srcDir, filePath);
-    const destPath = path.join(this._destDir, filePath);
+    const destPath = path.join(this._destDir, rename(filePath, this._renameOpts));
 
     switch (event) {
       case "add":
@@ -96,17 +100,15 @@ class UglifyWatcher extends EventEmitter {
         try {
           result = uglify.minify(srcPath, this._uglifyOpts);
         } catch (e) {
-          this._logger.error("{cyan:Minifying {red:failed} for {red:%s}} " +
-              "({magenta:%s} -> {magenta:%s}):\n{red:%s",
-              filePath, this._srcDir, this._destDir, e);
+          this._logger.error("{cyan:Minifying {red:failed} for {red:%s}}:\n{red:%s",
+              srcPath, e);
           this.emit("failure", filePath, e);
           return;
         }
 
         // TODO handle external source maps
         fs.outputFileSync(destPath, result.code);
-        this._logger.debug("{cyan:Minifying} {green:%s} ({magenta:%s} -> {magenta:%s})",
-            filePath, this._srcDir, this._destDir);
+        this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
         this.emit("success", filePath);
         break;
       case "unlink":
@@ -114,8 +116,7 @@ class UglifyWatcher extends EventEmitter {
           return;
         }
         fs.removeSync(destPath);
-        this._logger.debug("{cyan:Deleted} {green:%s} ({magenta:%s} -> {magenta:%s})",
-            filePath, this._srcDir, this._destDir);
+        this._logger.debug("{cyan:Deleted} {green:%s}", destPath);
         this.emit("delete", filePath);
         break;
       case "unlinkDir":

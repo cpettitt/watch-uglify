@@ -55,8 +55,8 @@ describe("watchUglify", function() {
     fs.writeFileSync(path.join(testSrcDir, "script.js"), exampleInput);
     createWatcher(testSrcDir, testDestDir, { persistent: false })
       .on("ready", function() {
-        expect(runScript("script.js").x).equals(10);
-        expect(readDestFile("script.js")).to.have.length.below(exampleInput.length);
+        expect(runScript("script.min.js").x).equals(10);
+        expect(readDestFile("script.min.js")).to.have.length.below(exampleInput.length);
         done();
       });
   });
@@ -66,8 +66,8 @@ describe("watchUglify", function() {
       .on("ready", function() {
         this.on("success", function(fp) {
           expect(fp).equals("script.js");
-          expect(runScript("script.js").x).equals(10);
-          expect(readDestFile("script.js")).to.have.length.below(exampleInput.length);
+          expect(runScript("script.min.js").x).equals(10);
+          expect(readDestFile("script.min.js")).to.have.length.below(exampleInput.length);
           done();
         });
         fs.writeFileSync(path.join(testSrcDir, "script.js"), exampleInput);
@@ -81,8 +81,8 @@ describe("watchUglify", function() {
       .on("ready", function() {
         this.on("success", function(fp) {
           expect(fp).equals("script.js");
-          expect(runScript("script.js").x).equals(50);
-          expect(readDestFile("script.js")).to.have.length.below(newInput.length);
+          expect(runScript("script.min.js").x).equals(50);
+          expect(readDestFile("script.min.js")).to.have.length.below(newInput.length);
           done();
         });
         fs.writeFileSync(path.join(testSrcDir, "script.js"), newInput);
@@ -95,7 +95,7 @@ describe("watchUglify", function() {
       .on("ready", function() {
         this.on("delete", function(fp) {
           expect(fp).equals("script.js");
-          expectNotExists("script.js");
+          expectNotExists("script.min.js");
           done();
         });
         fs.removeSync(path.join(testSrcDir, "script.js"));
@@ -112,7 +112,7 @@ describe("watchUglify", function() {
         });
         fs.removeSync(path.join(testSrcDir, "script.js"));
         setTimeout(function() {
-          expect(runScript("script.js").x).equals(10);
+          expect(runScript("script.min.js").x).equals(10);
           done();
         }, 200);
       });
@@ -127,10 +127,19 @@ describe("watchUglify", function() {
         });
         this.on("failure", function(fp) {
           expect(fp).equals("script.js");
-          expect(runScript("script.js").x).equals(10);
+          expect(runScript("script.min.js").x).equals(10);
           done();
         });
         fs.writeFileSync(path.join(testSrcDir, "script.js"), "this is not javascript");
+      });
+  });
+
+  it("allows the output filename to be changed", function(done) {
+    fs.writeFileSync(path.join(testSrcDir, "script.js"), exampleInput);
+    createWatcher(testSrcDir, testDestDir, { persistent: false, rename: { prefix: "min-" } })
+      .on("ready", function() {
+        expect(runScript("min-script.js").x).equals(10);
+        done();
       });
   });
 
