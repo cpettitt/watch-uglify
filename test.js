@@ -143,6 +143,16 @@ describe("watchUglify", function() {
       });
   });
 
+  it("generates a source map file if outSourceMap is defined", function(done) {
+    fs.writeFileSync(path.join(testSrcDir, "script.js"), exampleInput);
+    createWatcher(testSrcDir, testDestDir, { persistent: false, outSourceMap: { extname: ".js.map" } })
+      .on("ready", function() {
+        // Side effecty: if the file doesn't exist this call will throw an error
+        readDestFile("script.min.js.map");
+        done();
+      });
+  });
+
   function runScript(relativePath) {
     var sandbox = {};
     vm.runInNewContext(readDestFile(relativePath), sandbox);

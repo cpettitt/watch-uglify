@@ -19,7 +19,7 @@ import { Logger } from "eazy-logger";
 const DEFAULT_OPTS = {
   logLevel: "off",
   persistent: true,
-  delete: false,
+  delete: true,
   rename: { suffix: ".min" },
   uglify: {}
 };
@@ -42,8 +42,8 @@ class UglifyWatcher extends EventEmitter {
 
     this._delete = opts.delete;
     this._uglifyOpts = opts.uglify;
-
     this._renameOpts = opts.rename;
+    this._outSourceMapRenameOpts = opts.outSourceMap;
 
     const globs = arrify(opts.glob || ".");
 
@@ -91,14 +91,20 @@ class UglifyWatcher extends EventEmitter {
       filePath = ".";
     }
     const srcPath = path.join(this._srcDir, filePath);
-    const destPath = path.join(this._destDir, rename(filePath, this._renameOpts));
+    const destFile = rename(filePath, this._renameOpts);
+    const destPath = path.join(this._destDir, destFile);
 
     switch (event) {
       case "add":
       case "change":
+        const uglifyOpts = defaults({}, this._uglifyOpts);
+        if (this._outSourceMapRenameOpts) {
+          uglifyOpts.outSourceMap = rename(destFile, this._outSourceMapRenameOpts);
+        }
+
         let result;
         try {
-          result = uglify.minify(srcPath, this._uglifyOpts);
+          result = uglify.minify(srcPath, uglifyOpts);
         } catch (e) {
           this._logger.error("{cyan:Minifying {red:failed} for {red:%s}}:\n{red:%s",
               srcPath, e);
@@ -106,8 +112,15 @@ class UglifyWatcher extends EventEmitter {
           return;
         }
 
-        // TODO handle external source maps
         fs.outputFileSync(destPath, result.code);
+
+        if (uglifyOpts.outSourceMap) {
+          const parsedMap = JSON.parse(result.map);
+          parsedMap.sources = [filePath];
+          const serializedMap = JSON.stringify(parsedMap);
+          fs.outputFileSync(path.join(this._destDir, uglifyOpts.outSourceMap), serializedMap);
+        }
+
         this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
         this.emit("success", filePath);
         break;
