@@ -1,6 +1,6 @@
 {
   "name": "watch-uglify",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Watch for changes to javascript files and minify them",
   "main": "index.js",
   "scripts": {
