@@ -1,0 +1,32 @@
+{
+  "name": "watch-uglify",
+  "version": "0.0.0",
+  "description": "Watch for changes to javascript files and minifies them",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel index.es6 --out-file index.js --source-maps=external",
+    "pretest": "npm run build",
+    "prepublish": "npm test",
+    "test": "mocha test"
+  },
+  "author": "Chris Pettitt <cpettitt@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "arrify": "^1.0.0",
+    "babel": "^5.8.23",
+    "chokidar": "^1.0.5",
+    "eazy-logger": "^2.1.2",
+    "fs-extra": "^0.24.0",
+    "lodash": "^3.10.1",
+    "source-map-support": "^0.3.2",
+    "uglify-js": "^2.4.24"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "mocha": "^2.3.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpettitt/watch-uglify.git"
+  }
+}
