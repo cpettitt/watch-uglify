@@ -147,10 +147,21 @@ describe("watchUglify", function() {
     fs.writeFileSync(path.join(testSrcDir, "script.js"), exampleInput);
     createWatcher(testSrcDir, testDestDir, { persistent: false, outSourceMap: { extname: ".js.map" } })
       .on("ready", function() {
-        // Side effecty: if the file doesn't exist this call will throw an error
         var mapJson = JSON.parse(readDestFile("script.min.js.map"));
         expect(mapJson.file).equals("script.min.js");
         expect(mapJson.sources).includes("script.js");
+        done();
+      });
+  });
+
+  it("can extract inline source maps from the source", function(done) {
+    fs.writeFileSync(path.join(testSrcDir, "script.js"),
+        fs.readFileSync(path.join("test-fixture", "inline-source-map.js")));
+    createWatcher(testSrcDir, testDestDir, { persistent: false, outSourceMap: { extname: ".js.map" } })
+      .on("ready", function() {
+        var mapJson = JSON.parse(readDestFile("script.min.js.map"));
+        expect(mapJson.file).equals("script.min.js");
+        expect(mapJson.sources).includes("test.js");
         done();
       });
   });

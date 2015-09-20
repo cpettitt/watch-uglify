@@ -8,6 +8,7 @@ if (typeof _babelPolyfill === "undefined") {
 
 import arrify from "arrify";
 import chokidar from "chokidar";
+import convertSourceMap from "convert-source-map";
 import defaults from "lodash/object/defaults";
 import fs from "fs-extra";
 import path from "path";
@@ -100,11 +101,21 @@ class UglifyWatcher extends EventEmitter {
         const uglifyOpts = defaults({}, this._uglifyOpts);
         if (this._outSourceMapRenameOpts) {
           uglifyOpts.outSourceMap = rename(destFile, this._outSourceMapRenameOpts);
+          const converter = convertSourceMap.fromSource(fs.readFileSync(srcPath, "utf8"));
+          if (converter) {
+            uglifyOpts.inSourceMap = converter.toObject();
+          }
         }
 
         let result;
+        const cwd = process.cwd();
+        process.chdir(this._srcDir);
         try {
-          result = uglify.minify(srcPath, uglifyOpts);
+          try {
+            result = uglify.minify(filePath, uglifyOpts);
+          } finally {
+            process.chdir(cwd);
+          }
         } catch (e) {
           this._logger.error("{cyan:Minifying {red:failed} for {red:%s}}:\n{red:%s",
               srcPath, e);
@@ -116,7 +127,7 @@ class UglifyWatcher extends EventEmitter {
         this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
 
         if (uglifyOpts.outSourceMap) {
-          const map = rewriteUglifyMap(JSON.parse(result.map), filePath, destFile);
+          let map = rewriteUglifyMap(JSON.parse(result.map), filePath, destFile);
           const mapDestPath = path.join(this._destDir, uglifyOpts.outSourceMap);
           fs.outputFileSync(mapDestPath, JSON.stringify(map));
           this._logger.debug("{cyan:Generating source map} {green:%s} -> {green:%s}",
@@ -145,7 +156,6 @@ class UglifyWatcher extends EventEmitter {
 
 function rewriteUglifyMap(mapJson, filePath, destFile) {
   mapJson.file = destFile;
-  mapJson.sources = [filePath];
   return mapJson;
 }
 
