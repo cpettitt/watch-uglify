@@ -148,7 +148,9 @@ describe("watchUglify", function() {
     createWatcher(testSrcDir, testDestDir, { persistent: false, outSourceMap: { extname: ".js.map" } })
       .on("ready", function() {
         // Side effecty: if the file doesn't exist this call will throw an error
-        readDestFile("script.min.js.map");
+        var mapJson = JSON.parse(readDestFile("script.min.js.map"));
+        expect(mapJson.file).equals("script.min.js");
+        expect(mapJson.sources).includes("script.js");
         done();
       });
   });

@@ -116,6 +116,7 @@ class UglifyWatcher extends EventEmitter {
 
         if (uglifyOpts.outSourceMap) {
           const parsedMap = JSON.parse(result.map);
+          parsedMap.file = destFile;
           parsedMap.sources = [filePath];
           const serializedMap = JSON.stringify(parsedMap);
           fs.outputFileSync(path.join(this._destDir, uglifyOpts.outSourceMap), serializedMap);
