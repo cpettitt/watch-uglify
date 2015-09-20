@@ -127,7 +127,8 @@ class UglifyWatcher extends EventEmitter {
         this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
 
         if (uglifyOpts.outSourceMap) {
-          let map = rewriteUglifyMap(JSON.parse(result.map), filePath, destFile);
+          const map = JSON.parse(result.map);
+          map.file = destFile;
           const mapDestPath = path.join(this._destDir, uglifyOpts.outSourceMap);
           fs.outputFileSync(mapDestPath, JSON.stringify(map));
           this._logger.debug("{cyan:Generating source map} {green:%s} -> {green:%s}",
@@ -152,11 +153,6 @@ class UglifyWatcher extends EventEmitter {
         break;
     }
   }
-}
-
-function rewriteUglifyMap(mapJson, filePath, destFile) {
-  mapJson.file = destFile;
-  return mapJson;
 }
 
 function watchUglify(src, dest, opts) {
