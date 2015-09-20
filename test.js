@@ -1,5 +1,6 @@
 "use strict";
 
+var defaults = require("lodash/object/defaults");
 var expect = require("chai").expect;
 var fs = require("fs-extra");
 var path = require("path");
@@ -183,9 +184,9 @@ describe("watchUglify", function() {
     }).to.throw();
   }
 
-  function createWatcher() {
-    var args = Array.prototype.slice.call(arguments);
-    var watcher = watchUglify.apply(watchUglify, args);
+  function createWatcher(srcDir, destDir, opts) {
+    opts = defaults(opts || {}, { logLevel: "off" });
+    var watcher = watchUglify(srcDir, destDir, opts);
     createdWatchers.push(watcher);
     return watcher;
   }
