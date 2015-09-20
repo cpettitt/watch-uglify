@@ -17,7 +17,7 @@ Then require it to use it:
 var watchUglify = require("watch-uglify");
 
 var srcDir = ".";
-var destDir = "/tmp/watchBabel";
+var destDir = "/tmp/destDir";
 var options = { glob: "**/*.js" };
 var watcher = watchUglify(srcDir, destDir, options);
 watcher.on("ready", function() { console.log("ready"); });
