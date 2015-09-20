@@ -61,6 +61,7 @@ initial minification pass. You can close the watcher with `watcher.close()`.
   the destination file name. For example, if the destination file name is
   `script.min.js` and `outSourceMap = { extname: ".js.map" }` then a source map
   will be generated with the name `script.min.js.map`.
+- `uglify` (default: {}). Any options to send to uglify for minification.
 
 #### Events
 
