@@ -113,16 +113,19 @@ class UglifyWatcher extends EventEmitter {
         }
 
         fs.outputFileSync(destPath, result.code);
+        this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
 
         if (uglifyOpts.outSourceMap) {
           const parsedMap = JSON.parse(result.map);
           parsedMap.file = destFile;
           parsedMap.sources = [filePath];
           const serializedMap = JSON.stringify(parsedMap);
-          fs.outputFileSync(path.join(this._destDir, uglifyOpts.outSourceMap), serializedMap);
+          const mapDestPath = path.join(this._destDir, uglifyOpts.outSourceMap);
+          fs.outputFileSync(mapDestPath, serializedMap);
+          this._logger.debug("{cyan:Generating source map} {green:%s} -> {green:%s}",
+              srcPath, mapDestPath);
         }
 
-        this._logger.debug("{cyan:Minifying} {green:%s} -> {green:%s}", srcPath, destPath);
         this.emit("success", filePath);
         break;
       case "unlink":
